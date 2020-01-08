@@ -1,0 +1,114 @@
+= edn<->json
+
+ifdef::env-github,env-cljdoc[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+This is an opinionated EDN to/from JSON converter.
+
+The functionality provided by this library makes an effort to support conversion between
+EDN to JSON and back without losing data (as much as possible).
+
+== Motivation
+
+While working with ClojureScript immutable data sources is great inside Clojure land, most
+of the Javascript Ecosystem is designed and optimized to work around JSON. For example,
+if you want store data in the link:https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API[IndexedDB]
+on the browser, the documents that you store must be JSON objects.
+
+You could try to go around this by having a object with a single key that has the EDN
+encoded as string (or maybe transit?), but if you do so, you can't leverage the IndexedDB
+indexes, that expect json structures to work upon.
+
+There is the standard `clj->js`, but it has some problems:
+
+- it loses keyword namespaces data
+- types are constrained by JSON (loses type information for UUID's, dates, etc...)
+
+This library tries to address this problem by making an opinionated encoder/decoder, by
+taking some arbitrary decisions (and sticking to them) we can send and recover this data.
+
+== Encoding decisions
+
+Since JSON is not as rich or extensible as EDN, some decisions have to be made to enable
+the reconstruction of the original EDN data from the JSON encoded one.
+
+The decisions taken by this library focus on the following properties:
+
+- Scalar shared types must be transparent (encode and decode as-is)
+- Nested structures should be reflected as JSON
+- Support encoding of different sequence types sets, lists and vectors
+- Support map keys as strings, keywords, symbols, maps, sets and vectors
+- Since most map keys are keywords, this library assumes that JSON keys starting with `:` are keywords
+
+NOTE: that last point means that if you encode `{":string" 42}`, that key string is going
+to be decoded as a keyword instead of a string. Considering JSON strings starting with
+`:` are quite rare, this is a trade off this library is willing to take.
+
+== What it looks like?
+
+Some examples of data encoded using this library:
+
+[source,clojure]
+----
+; simple scalars
+(= (edn->json 42) 42)
+(= (edn->json true) true)
+(= (edn->json nil) null)
+(= (edn->json "string") "string")
+
+; edn scalars
+(= (edn->json :keyword) #js {"__edn-value" ":keyword"})
+(= (edn->json :ns/keyword) #js {"__edn-value" ":ns/keyword"})
+(= (edn->json 'symb) #js {"__edn-value" "symb"})
+(= (edn->json 'foo/symb) #js {"__edn-value" "foo/symb"})
+
+; edn default extensions
+(= (edn->json #uuid "") #js {"__edn-value" "#uuid foo/symb"})
+(= (edn->json #inst"2020-01-08T03:20:26.984-00:00") #js {"__edn-value" "#inst \"2020-01-08T03:20:26.984-00:00\""})
+
+; sequences
+(= (edn->json []) #js [])
+(= (edn->json [42]) #js [42])
+(= (edn->json #{true}) #js [#js {"__edn-list-type" "set"}, true])
+(= (edn->json '(nil :kw)) #js [#js {"__edn-list-type" "list"}, null, #js {"__edn-value" ":kw"}])
+
+; maps
+(= (edn->json {}) #js {})
+(= (edn->json {2 42}) #js {"2" 42})
+(= (edn->json {nil 42}) #js {"__edn-key:nil" 42})
+(= (edn->json {true 42}) #js {"__edn-key:true" 42})
+(= (edn->json {"foo" 42}) #js {"foo" 42})
+(= (edn->json {:foo 42}) #js {":foo" 42})
+(= (edn->json {:foo/bar 42}) #js {":foo/bar" 42})
+(= (edn->json {:foo {:bar 42}}) #js {":foo" #js {":bar" 42}})
+
+; maps with complex keys
+(= (edn->json {'sym 42}) #js {"__edn-key:sym" 42})
+(= (edn->json {[3 5] 42}) #js {"__edn-key:[3 5]" 42})
+(= (edn->json {#{:a :c} 42}) #js {"__edn-key:#{:a :c}" 42})
+----
+
+To decode, use the `json->edn` function:
+
+[source,clojure]
+----
+(json->edn #js {":foo" #js {":bar" 42}}) ; => {:foo {:bar 42}}
+----
+
+IMPORTANT: numbers are not going to be restored with json->edn, instead
+their string counterpart will be used, this is trade off made this way to keep sane
+number keys on the JSON side.
+
+== When to use this library
+
+Don't use this library for transport layers. Unless your transport layer can do some
+sort of optimization on top JSON structures, you are better using Transit directly.
+
+The encoding provided on this library is suites to store EDN as JSON in stores that can
+take advantage of the JSON structure to function/optimize. Most cases will be around
+document stores (IndexedDB, Mongo, PouchDB, etc...).
