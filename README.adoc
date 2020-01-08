@@ -58,6 +58,9 @@ Some examples of data encoded using this library:
 
 [source,clojure]
 ----
+(ns my-ns
+  (:require [com.wsscode.edn<->json :refer [edn->json json->edn]))
+
 ; simple scalars
 (= (edn->json 42) 42)
 (= (edn->json true) true)
