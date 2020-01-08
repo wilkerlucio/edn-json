@@ -1,4 +1,4 @@
-= edn<->json
+= `edn<->json`
 
 ifdef::env-github,env-cljdoc[]
 :tip-caption: :bulb:
