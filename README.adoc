@@ -8,6 +8,9 @@ ifdef::env-github,env-cljdoc[]
 :warning-caption: :warning:
 endif::[]
 
+image:https://img.shields.io/clojars/v/com.wsscode/edn-json.svg[link=https://clojars.org/com.wsscode/edn-json]
+image:https://cljdoc.xyz/badge/com.wsscode/edn-json["cljdoc", link="https://cljdoc.xyz/d/com.wsscode/edn-json/CURRENT"]
+
 This is an opinionated EDN to/from JSON converter.
 
 The functionality provided by this library makes an effort to support conversion between
