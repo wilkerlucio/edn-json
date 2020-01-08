@@ -24,35 +24,35 @@
     (is (= (cj/edn->json "hello") "hello")))
 
   (testing "edn encoding"
-    (is (=js (cj/edn->json :keyword) #js {"__edn-value" ":keyword"}))
-    (is (=js (cj/edn->json :ns/keyword) #js {"__edn-value" ":ns/keyword"}))
-    (is (=js (cj/edn->json 'symb) #js {"__edn-value" "symb"}))
-    (is (=js (cj/edn->json 'foo/symb) #js {"__edn-value" "foo/symb"}))
+    (is (=js (cj/edn->json :keyword) "__edn-value|:keyword"))
+    (is (=js (cj/edn->json :ns/keyword) "__edn-value|:ns/keyword"))
+    (is (=js (cj/edn->json 'symb) "__edn-value|symb"))
+    (is (=js (cj/edn->json 'foo/symb) "__edn-value|foo/symb"))
 
     (testing "default extensions"
-      (=js (cj/edn->json #uuid"ca37585a-73cb-48c3-a8a4-7868ebc31801") #js {"__edn-value" "#uuid\"ca37585a-73cb-48c3-a8a4-7868ebc31801\""})
-      (=js (cj/edn->json #inst"2020-01-08T03:20:26.984-00:00") #js {"__edn-value" "#inst \"2020-01-08T03:20:26.984-00:00\""})))
+      (=js (cj/edn->json #uuid"ca37585a-73cb-48c3-a8a4-7868ebc31801") "__edn-value|#uuid\"ca37585a-73cb-48c3-a8a4-7868ebc31801\"")
+      (=js (cj/edn->json #inst"2020-01-08T03:20:26.984-00:00") "__edn-value|#inst \"2020-01-08T03:20:26.984-00:00\"")))
 
   (testing "sequences"
     (is (=js (cj/edn->json []) #js []))
     (is (=js (cj/edn->json [42]) #js [42]))
-    (is (=js (cj/edn->json #{true}) #js [#js {"__edn-list-type" "set"}, true]))
-    (is (=js (cj/edn->json '(nil :kw)) #js [#js {"__edn-list-type" "list"}, nil, #js {"__edn-value" ":kw"}])))
+    (is (=js (cj/edn->json #{true}) #js ["__edn-list-type|set", true]))
+    (is (=js (cj/edn->json '(nil :kw)) #js ["__edn-list-type|list", nil, "__edn-value|:kw"])))
 
   (testing "map encoding"
     (is (=js (cj/edn->json {}) #js {}))
     (is (=js (cj/edn->json {2 42}) #js {"2" 42}))
-    (is (=js (cj/edn->json {nil 42}) #js {"__edn-key:nil" 42}))
-    (is (=js (cj/edn->json {true 42}) #js {"__edn-key:true" 42}))
+    (is (=js (cj/edn->json {nil 42}) #js {"__edn-key|nil" 42}))
+    (is (=js (cj/edn->json {true 42}) #js {"__edn-key|true" 42}))
     (is (=js (cj/edn->json {"foo" 42}) #js {"foo" 42}))
     (is (=js (cj/edn->json {:foo 42}) #js {":foo" 42}))
     (is (=js (cj/edn->json {:foo/bar 42}) #js {":foo/bar" 42}))
     (is (=js (cj/edn->json {:foo {:bar 42}}) #js {":foo" #js {":bar" 42}}))
 
     ; maps with complex keys
-    (is (=js (cj/edn->json {'sym 42}) #js {"__edn-key:sym" 42}))
-    (is (=js (cj/edn->json {[3 5] 42}) #js {"__edn-key:[3 5]" 42}))
-    (is (=js (cj/edn->json {#{:a :c} 42}) #js {"__edn-key:#{:c :a}" 42}))))
+    (is (=js (cj/edn->json {'sym 42}) #js {"__edn-key|sym" 42}))
+    (is (=js (cj/edn->json {[3 5] 42}) #js {"__edn-key|[3 5]" 42}))
+    (is (=js (cj/edn->json {#{:a :c} 42}) #js {"__edn-key|#{:c :a}" 42}))))
 
 (defn sanitize-data [x]
   (walk/postwalk

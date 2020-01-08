@@ -23,7 +23,7 @@
     (str x)
 
     :else
-    (str "__edn-key:" (pr-str x)  )))
+    (str "__edn-key|" (pr-str x)  )))
 
 (defn decode-key
   [s]
@@ -31,8 +31,8 @@
     (str/starts-with? s ":")
     (keyword (subs s 1))
 
-    (str/starts-with? s "__edn-key:")
-    (edn/read-string (subs s (count "__edn-key:")))
+    (str/starts-with? s "__edn-key|")
+    (edn/read-string (subs s (count "__edn-key|")))
 
     :else
     s))
@@ -64,15 +64,15 @@
                (coll? x) (let [arr (array)]
                            (cond
                              (set? x)
-                             (.push arr #js {"__edn-list-type" "set"})
+                             (.push arr "__edn-list-type|set")
 
                              (list? x)
-                             (.push arr #js {"__edn-list-type" "list"}))
+                             (.push arr "__edn-list-type|list"))
 
                            (doseq [x (map thisfn x)]
                              (.push arr x))
                            arr)
-               :else #js {"__edn-value" (pr-str x)}))]
+               :else (str "__edn-value|" (pr-str x))))]
      (thisfn x))))
 
 (defn js-obj? [x]
@@ -80,8 +80,9 @@
 
 (defn- list-type [x]
   (let [f (aget x 0)]
-    (and (js-obj? f)
-         (gobj/get f "__edn-list-type"))))
+    (and (string? f)
+         (str/starts-with? f "__edn-list-type|")
+         (subs f (count "__edn-list-type|")))))
 
 (defn json->edn
   "Recursively transforms JavaScript arrays into ClojureScript
@@ -107,7 +108,7 @@
                (array? x)
                (let [lt (list-type x)]
                  (into
-                   (case (list-type x)
+                   (case lt
                      "list"
                      (list)
 
@@ -120,14 +121,15 @@
                      lt (drop 1)
                      (= lt "list") (reverse))))
 
+               (and (string? x)
+                    (str/starts-with? x "__edn-value|"))
+               (edn/read-string (subs x (count "__edn-value|")))
+
                (identical? (type x) js/Object)
-               (let [edn-value (gobj/get x "__edn-value")]
-                 (if edn-value
-                   (edn/read-string edn-value)
-                   (persistent!
-                     (reduce
-                       (fn [r k]
-                         (assoc! r (decode-key k) (thisfn (gobj/get x k))))
-                       (transient {}) (js-keys x)))))
+               (persistent!
+                 (reduce
+                   (fn [r k]
+                     (assoc! r (decode-key k) (thisfn (gobj/get x k))))
+                   (transient {}) (js-keys x)))
                :else x))]
      (f x))))

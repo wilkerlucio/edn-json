@@ -68,20 +68,20 @@ Some examples of data encoded using this library:
 (= (edn->json "string") "string")
 
 ; edn scalars
-(= (edn->json :keyword) #js {"__edn-value" ":keyword"})
-(= (edn->json :ns/keyword) #js {"__edn-value" ":ns/keyword"})
-(= (edn->json 'symb) #js {"__edn-value" "symb"})
-(= (edn->json 'foo/symb) #js {"__edn-value" "foo/symb"})
+(= (edn->json :keyword) "__edn-value|:keyword")
+(= (edn->json :ns/keyword) "__edn-value|:ns/keyword")
+(= (edn->json 'symb) "__edn-value|symb")
+(= (edn->json 'foo/symb) "__edn-value|foo/symb")
 
 ; edn default extensions
-(= (edn->json #uuid "") #js {"__edn-value" "#uuid foo/symb"})
-(= (edn->json #inst"2020-01-08T03:20:26.984-00:00") #js {"__edn-value" "#inst \"2020-01-08T03:20:26.984-00:00\""})
+(= (edn->json #uuid "") "__edn-value|#uuid foo/symb")
+(= (edn->json #inst"2020-01-08T03:20:26.984-00:00") "__edn-value|#inst \"2020-01-08T03:20:26.984-00:00\"")
 
 ; sequences
 (= (edn->json []) #js [])
 (= (edn->json [42]) #js [42])
-(= (edn->json #{true}) #js [#js {"__edn-list-type" "set"}, true])
-(= (edn->json '(nil :kw)) #js [#js {"__edn-list-type" "list"}, null, #js {"__edn-value" ":kw"}])
+(= (edn->json #{true}) #js ["__edn-list-type|set" true])
+(= (edn->json '(nil :kw)) #js ["__edn-list-type|list" null "__edn-value|:kw"])
 
 ; maps
 (= (edn->json {}) #js {})
