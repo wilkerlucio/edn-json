@@ -43,6 +43,7 @@ the reconstruction of the original EDN data from the JSON encoded one.
 The decisions taken by this library focus on the following properties:
 
 - Scalar shared types must be transparent (encode and decode as-is)
+- EDN values are encoded as strings, prefixed with `__edn-value|`
 - Nested structures should be reflected as JSON
 - Support encoding of different sequence types sets, lists and vectors
 - Support map keys as strings, keywords, symbols, maps, sets and vectors
