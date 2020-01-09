@@ -1,12 +1,13 @@
 (ns com.wsscode.edn<->json-test
   (:require [clojure.spec.alpha :as s]
+            [clojure.spec.gen.alpha :as gen]
+            [clojure.string :as str]
             [clojure.test :refer [is are run-tests testing deftest]]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as test :include-macros true]
             [clojure.test.check.properties :as props]
             [clojure.walk :as walk]
-            [com.wsscode.edn<->json :as cj]
-            [clojure.string :as str]))
+            [com.wsscode.edn<->json :as cj]))
 
 (defn =js [a b]
   (= (js/JSON.stringify a)
@@ -85,10 +86,8 @@
     x))
 
 (defn valid-encode-decode []
-  (props/for-all [x (s/gen any?)]
-    (let [x (sanitize-data x)]
-      (= x
-         (-> x cj/edn->json cj/json->edn)))))
+  (props/for-all [x (gen/fmap sanitize-data (s/gen any?))]
+    (= x (-> x cj/edn->json cj/json->edn))))
 
 (test/defspec encode-and-decode-consistency {:max-size 12 :num-tests 5000} (valid-encode-decode))
 
