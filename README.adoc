@@ -115,8 +115,10 @@ number keys on the JSON side.
 
 Don't use this library for transport layers. Unless your transport layer can do some
 sort of optimization on top JSON structures, you are better using link:https://github.com/cognitect/transit-cljs[Transit]
-directly.
+directly. Transit produces JSON suitable for faithful round-trips in and out of EDN types,
+but it’s not good for consuming as JSON.
 
-The encoding provided on this library is suites to store EDN as JSON in stores that can
-take advantage of the JSON structure to function/optimize. Most cases will be around
-document stores (IndexedDB, Mongo, PouchDB, etc...).
+On the other hand this library gives up some round-tripability to get something
+a native JSON environment could consume comfortably, e.g. storing EDN as JSON in stores
+that take advantage of the JSON structure to function/optimize. Most cases will be
+around document stores (IndexedDB, Mongo, PouchDB, etc...).
