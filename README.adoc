@@ -75,7 +75,7 @@ Some examples of data encoded using this library:
 (= (edn->json 'foo/symb) "__edn-value|foo/symb")
 
 ; edn default extensions
-(= (edn->json #uuid "") "__edn-value|#uuid foo/symb")
+(= (edn->json #uuid"ca37585a-73cb-48c3-a8a4-7868ebc31801") "__edn-value|#uuid\"ca37585a-73cb-48c3-a8a4-7868ebc31801\"")
 (= (edn->json #inst"2020-01-08T03:20:26.984-00:00") "__edn-value|#inst \"2020-01-08T03:20:26.984-00:00\"")
 
 ; sequences
