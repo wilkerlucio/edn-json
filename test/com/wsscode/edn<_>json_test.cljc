@@ -161,11 +161,12 @@
        (= (-> x (cj/edn->json options) js->clj)
           (-> x (cj/edn->json-like options))))))
 
-(test/defspec consistent-json-and-json-like {:max-size 12 :num-tests 5000}
-  (consistent-json-and-json-like-props))
+#?(:cljs
+   (test/defspec consistent-json-and-json-like {:max-size 12 :num-tests 5000}
+     (consistent-json-and-json-like-props)))
 
 (comment
-  (gen/sample (s/gen any?) 100)
+  (gen/sample (s/gen (s/keys :opt [::cj/encode-list-type?])) 100)
 
   (cj/json-like->edn (cj/edn->json-like {":foo" 42}))
 
