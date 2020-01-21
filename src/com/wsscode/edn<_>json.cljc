@@ -1,7 +1,10 @@
 (ns com.wsscode.edn<->json
   (:require [clojure.edn :as edn]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
             #?(:cljs [goog.object :as gobj])))
+
+(s/def ::encode-list-type? boolean?)
 
 (defn simple-js-type?
   "Return true for simple JS types. The intended use of this function is to detect if
@@ -23,7 +26,7 @@
     (str x)
 
     :else
-    (str "__edn-key|" (pr-str x)  )))
+    (str "__edn-key|" (pr-str x))))
 
 (defn decode-key
   [s]
@@ -53,7 +56,8 @@
 
      Other than that, all printable values should encode and decode with fidelity."
      ([x] (edn->json x {}))
-     ([x options]
+     ([x {::keys [encode-list-type?]
+          :or    {encode-list-type? true}}]
       (letfn [(thisfn [x]
                 (cond
                   (simple-js-type? x) x
@@ -63,12 +67,13 @@
                                (gobj/set m (encode-key k) (thisfn v)))
                              m)
                   (coll? x) (let [arr (array)]
-                              (cond
-                                (set? x)
-                                (.push arr "__edn-list-type|set")
+                              (if encode-list-type?
+                                (cond
+                                  (set? x)
+                                  (.push arr "__edn-list-type|set")
 
-                                (list? x)
-                                (.push arr "__edn-list-type|list"))
+                                  (list? x)
+                                  (.push arr "__edn-list-type|list")))
 
                               (doseq [x (map thisfn x)]
                                 (.push arr x))
@@ -81,7 +86,8 @@
   JSON directly. This is useful as a middle format if you need to later send it encoded
   as JSON."
   ([x] (edn->json-like x {}))
-  ([x options]
+  ([x {::keys [encode-list-type?]
+       :or    {encode-list-type? true}}]
    (letfn [(thisfn [x]
              (cond
                (simple-js-type? x) x
@@ -89,12 +95,15 @@
                           {}
                           (map (fn [[k v]] [(encode-key k) (thisfn v)]))
                           x)
-               (coll? x) (let [arr (cond-> []
-                                     (set? x)
-                                     (conj "__edn-list-type|set")
+               (coll? x) (let [arr (if encode-list-type?
+                                     (cond-> []
+                                       (set? x)
+                                       (conj "__edn-list-type|set")
 
-                                     (list? x)
-                                     (conj "__edn-list-type|list"))]
+                                       (list? x)
+                                       (conj "__edn-list-type|list"))
+
+                                     [])]
                            (into arr (map thisfn) x))
                :else (str "__edn-value|" (pr-str x))))]
      (thisfn x))))

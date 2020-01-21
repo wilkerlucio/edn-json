@@ -97,7 +97,16 @@
     ; maps with complex keys
     (is (= (cj/edn->json-like {'sym 42}) {"__edn-key|sym" 42}))
     (is (= (cj/edn->json-like {[3 5] 42}) {"__edn-key|[3 5]" 42}))
-    (is (= (cj/edn->json-like {#{:a :c} 42}) {"__edn-key|#{:c :a}" 42}))))
+    (is (= (cj/edn->json-like {#{:a :c} 42}) {"__edn-key|#{:c :a}" 42})))
+
+  (testing "options"
+    (testing "::encode-list-type?"
+      (is (= (cj/edn->json-like #{true} {::cj/encode-list-type? false})
+             [true])))))
+
+(defn is-nan? [x]
+  #?(:clj  false
+     :cljs (and (number? x) (js/isNaN x))))
 
 (defn sanitize-data [x]
   (walk/postwalk
@@ -122,7 +131,7 @@
                   v]))
           x)
 
-        (and (number? x) #?(:cljs (js/isNaN x)))
+        (is-nan? x)
         "NaN"
 
         :else
@@ -145,6 +154,13 @@
 (test/defspec encode-and-decode-consistency-json-like {:max-size 12 :num-tests 5000}
   (valid-encode-decode-json-like))
 
+#?(:cljs
+   (defn consistent-json-and-json-like-props []
+     (props/for-all [x       (gen/fmap sanitize-data (s/gen any?))
+                     options (s/gen (s/keys :opt [::cj/encode-list-type?]))]
+       (= (-> x (cj/edn->json options) js->clj)
+          (-> x (cj/edn->json-like options))))))
+
 (comment
   (gen/sample (s/gen any?) 100)
 
@@ -156,4 +172,5 @@
     (-> x cj/edn->json cj/json->edn))
 
   (tc/quick-check 50000 (valid-encode-decode) :max-size 12)
-  (tc/quick-check 50000 (valid-encode-decode-json-like) :max-size 12))
+  (tc/quick-check 50000 (valid-encode-decode-json-like) :max-size 12)
+  (tc/quick-check 50000 (consistent-json-and-json-like-props) :max-size 12))
