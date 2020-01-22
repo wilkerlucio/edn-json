@@ -111,6 +111,16 @@ IMPORTANT: numbers are not going to be restored with json->edn, instead
 their string counterpart will be used, this is trade off made this way to keep sane
 number keys on the JSON side.
 
+== JSON Like
+
+If you are Clojure land, it still useful to encode and decode maps in ways that are JSON
+friendly, although not native JSON (since there is no standard support for it in Java).
+
+Example use cases of this is when interoping with document stores that expect JSON, for
+example interoping with Elastic Search. For those there are the functions `edn->json-like`
+and its counter part `json-like->edn`, those use EDN data in and out, but massage it
+so its friendly for storing in JSON-like supported stores.
+
 == When to use this library
 
 Don't use this library for transport layers. Unless your transport layer can do some
