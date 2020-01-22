@@ -104,6 +104,10 @@
       (is (= (cj/edn->json-like #{true} {::cj/encode-list-type? false})
              [true])))))
 
+(deftest json-like->edn-test
+  (testing "non string keys are maintained"
+    (is (= (cj/json-like->edn {:foo "bar"})))))
+
 (defn is-nan? [x]
   #?(:clj  false
      :cljs (and (number? x) (js/isNaN x))))

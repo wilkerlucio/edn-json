@@ -29,15 +29,18 @@
     (str "__edn-key|" (pr-str x))))
 
 (defn decode-key
+  "Decode string key to EDN, if key is not a string it is returned as is."
   [s]
-  (cond
-    (str/starts-with? s ":")
-    (keyword (subs s 1))
+  (if (string? s)
+    (cond
+      (str/starts-with? s ":")
+      (keyword (subs s 1))
 
-    (str/starts-with? s "__edn-key|")
-    (edn/read-string (subs s (count "__edn-key|")))
+      (str/starts-with? s "__edn-key|")
+      (edn/read-string (subs s (count "__edn-key|")))
 
-    :else
+      :else
+      s)
     s))
 
 #?(:cljs
