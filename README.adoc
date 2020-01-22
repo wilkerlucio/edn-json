@@ -107,9 +107,26 @@ To decode, use the `json->edn` function:
 (json->edn #js {":foo" #js {":bar" 42}}) ; => {:foo {:bar 42}}
 ----
 
-IMPORTANT: numbers are not going to be restored with json->edn, instead
+IMPORTANT: numeric keys on maps are not going to be restored as numbers with json->edn, instead
 their string counterpart will be used, this is trade off made this way to keep sane
 number keys on the JSON side.
+
+== Encoding options
+
+The encoder functions accept a map with configurations for encoding, here are the available
+options:
+
+|===
+
+|Option
+|Default
+|Description
+
+|`::encode-list-type?`
+|`true`
+|Encode special list types (sets and lists) by adding a special first element, when
+disable all sequences will be encoded as vectors.
+|===
 
 == JSON Like
 
