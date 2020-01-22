@@ -116,8 +116,7 @@ number keys on the JSON side.
 The encoder functions accept a map with configurations for encoding, here are the available
 options:
 
-[cols="3", options="header"]
-.Encoding Options
+[cols="3*", options="header"]
 |===
 |Option
 |Default
@@ -125,8 +124,9 @@ options:
 
 |`::encode-list-type?`
 |`true`
-|Encode special list types (sets and lists) by adding a special first element, when
-disable all sequences will be encoded as vectors.
+|Encode special list types (sets and lists) by adding a special first element.
+
+When disable all sequences will be encoded as vectors.
 |===
 
 == JSON Like
