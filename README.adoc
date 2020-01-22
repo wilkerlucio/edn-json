@@ -116,7 +116,7 @@ number keys on the JSON side.
 The encoder functions accept a map with configurations for encoding, here are the available
 options:
 
-[cols="1,1,1", options="header"]
+[cols="3", options="header"]
 .Encoding Options
 |===
 |Option
