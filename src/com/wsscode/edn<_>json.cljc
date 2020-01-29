@@ -8,6 +8,8 @@
 (s/def ::encode-value (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
 (s/def ::encode-map-key (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
 
+(s/def ::decode-edn-values? boolean?)
+
 (defn simple-js-type?
   "Return true for simple JS types. The intended use of this function is to detect if
   a value should be stored in its original form, for values that return false here, its
@@ -58,6 +60,16 @@
     (encode-value x)
     (str "__edn-value|" (pr-str x))))
 
+(defn edn-value-str? [x]
+  (and (string? x) (str/starts-with? x "__edn-value|")))
+
+(defn decode-value
+  [x {::keys [decode-edn-values?]
+      :or    {decode-edn-values? true}}]
+  (if (and decode-edn-values? (edn-value-str? x))
+    (edn/read-string (subs x (count "__edn-value|")))
+    x))
+
 #?(:cljs
    (defn edn->json
      "Recursively transforms ClojureScript values to JavaScript.
@@ -79,6 +91,7 @@
           :as    opts}]
       (letfn [(thisfn [x]
                 (cond
+                  (and (string? x) (str/starts-with? x "__edn-value|")) (encode-value x opts)
                   (simple-js-type? x) x
                   (satisfies? IEncodeJS x) (-clj->js x)
                   (map? x) (let [m (js-obj)]
@@ -110,6 +123,7 @@
        :as    opts}]
    (letfn [(thisfn [x]
              (cond
+               (and (string? x) (str/starts-with? x "__edn-value|")) (encode-value x opts)
                (simple-js-type? x) x
                (map? x) (into
                           {}
@@ -179,9 +193,8 @@
                         lt (drop 1)
                         (= lt "list") (reverse))))
 
-                  (and (string? x)
-                       (str/starts-with? x "__edn-value|"))
-                  (edn/read-string (subs x (count "__edn-value|")))
+                  (edn-value-str? x)
+                  (decode-value x opts)
 
                   (identical? (type x) js/Object)
                   (persistent!
@@ -189,6 +202,7 @@
                       (fn [r k]
                         (assoc! r (decode-key k) (thisfn (gobj/get x k))))
                       (transient {}) (js-keys x)))
+
                   :else x))]
         (f x)))))
 
@@ -227,8 +241,5 @@
                      lt (drop 1)
                      (= lt "list") (reverse))))
 
-               (and (string? x)
-                    (str/starts-with? x "__edn-value|"))
-               (edn/read-string (subs x (count "__edn-value|")))
-               :else x))]
+               :else (decode-value x opts)))]
      (f x))))

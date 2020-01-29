@@ -1,4 +1,4 @@
-(defproject com.wsscode/edn-json "1.0.4"
+(defproject com.wsscode/edn-json "1.0.5"
   :description "Tools to convert back and forth between EDN and JSON, optimized for consistency and storage."
   :url "https://github.com/wilkerlucio/edn-json"
   :license {:name "MIT"

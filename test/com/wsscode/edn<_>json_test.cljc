@@ -66,7 +66,9 @@
     (is (= (cj/edn->json-like false) false))
     (is (= (cj/edn->json-like nil) nil))
     (is (= (cj/edn->json-like "") ""))
-    (is (= (cj/edn->json-like "hello") "hello")))
+    (is (= (cj/edn->json-like "hello") "hello"))
+    (is (= (cj/edn->json-like "__edn-value|:injected") "__edn-value|\"__edn-value|:injected\""))
+    (is (= (cj/edn->json-like "__edn-value|:in\"jected") "__edn-value|\"__edn-value|:in\\\"jected\"")))
 
   (testing "edn encoding"
     (is (= (cj/edn->json-like :keyword) "__edn-value|:keyword"))
@@ -127,7 +129,15 @@
 (deftest json-like->edn-test
   (testing "non string keys are maintained"
     (is (= (cj/json-like->edn {:foo "bar"})
-           {:foo "bar"}))))
+           {:foo "bar"})))
+
+  (testing "decode-edn-values?"
+    (is (= (cj/json-like->edn "__edn-value|:foo" {::cj/decode-edn-values? false})
+           "__edn-value|:foo"))))
+
+(deftest sanitization
+  (let [x "__edn-value|:foo"]
+    (is (= x (-> x cj/edn->json-like cj/json-like->edn)))))
 
 (defn is-nan? [x]
   #?(:clj  false
@@ -183,12 +193,14 @@
    (defn consistent-json-and-json-like-props []
      (props/for-all [x       (gen/fmap sanitize-data (s/gen any?))
                      options (s/gen (s/keys :opt [::cj/encode-list-type?
-                                                  ::cj/encode-value]))]
+                                                  ::cj/encode-value
+                                                  ::cj/encode-map-key
+                                                  ::cj/decode-edn-values?]))]
        (= (-> x (cj/edn->json options) js->clj)
           (-> x (cj/edn->json-like options))))))
 
 #?(:cljs
-   (test/defspec consistent-json-and-json-like {:max-size 12 :num-tests 5000}
+   (test/defspec consistent-json-and-json-like {:max-size 12 :num-tests 200}
      (consistent-json-and-json-like-props)))
 
 (comment

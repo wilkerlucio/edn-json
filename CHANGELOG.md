@@ -1,5 +1,8 @@
 # Change Log
 
+## [1.0.5]
+- Sanitize strings starting with `__edn-value|`
+
 ## [1.0.4]
 - Add support for `::encode-value`
 - Add support for `::encode-map-key`

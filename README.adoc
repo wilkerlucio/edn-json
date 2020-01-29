@@ -74,6 +74,9 @@ Some examples of data encoded using this library:
 (= (edn->json 'symb) "__edn-value|symb")
 (= (edn->json 'foo/symb) "__edn-value|foo/symb")
 
+; injection prevention
+(= (edn->json "__edn-value|:foo") "__edn-value|\"__edn-value|:foo\"")
+
 ; edn default extensions
 (= (edn->json #uuid"ca37585a-73cb-48c3-a8a4-7868ebc31801") "__edn-value|#uuid\"ca37585a-73cb-48c3-a8a4-7868ebc31801\"")
 (= (edn->json #inst"2020-01-08T03:20:26.984-00:00") "__edn-value|#inst \"2020-01-08T03:20:26.984-00:00\"")
@@ -138,6 +141,10 @@ that isn't a simple JSON atomic type.
 |`::encode-map-key`
 |`nil`
 |Encode EDN special value on map keys with custom encoding.
+
+|`::decode-edn-values?`
+|`true`
+|If set to false, will not try to decode EDN values.
 |===
 
 == JSON Like
