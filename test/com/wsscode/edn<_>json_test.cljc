@@ -102,7 +102,20 @@
   (testing "options"
     (testing "::encode-list-type?"
       (is (= (cj/edn->json-like #{true} {::cj/encode-list-type? false})
-             [true])))))
+             [true])))
+
+    (testing "::encode-values?"
+      (is (= (cj/edn->json-like 42 {::cj/encode-values? false})
+             42))
+      (is (= (cj/edn->json-like "" {::cj/encode-values? false})
+             ""))
+      (is (= (cj/edn->json-like :keyword {::cj/encode-values? false})
+             ":keyword"))
+      (is (= (cj/edn->json-like :keyword {::cj/encode-values?  false
+                                          ::cj/fallback-encode identity})
+             :keyword))
+      (is (= (cj/edn->json-like #{:keyword} {::cj/encode-values? false})
+             ["__edn-list-type|set" ":keyword"])))))
 
 (deftest json-like->edn-test
   (testing "non string keys are maintained"
@@ -161,7 +174,8 @@
 #?(:cljs
    (defn consistent-json-and-json-like-props []
      (props/for-all [x       (gen/fmap sanitize-data (s/gen any?))
-                     options (s/gen (s/keys :opt [::cj/encode-list-type?]))]
+                     options (s/gen (s/keys :opt [::cj/encode-list-type?
+                                                  ::cj/encode-values?]))]
        (= (-> x (cj/edn->json options) js->clj)
           (-> x (cj/edn->json-like options))))))
 

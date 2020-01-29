@@ -125,8 +125,16 @@ options:
 |`::encode-list-type?`
 |`true`
 |Encode special list types (sets and lists) by adding a special first element.
-
 When disable all sequences will be encoded as vectors.
+
+|`::encode-values?`
+|`true`
+|Encode EDN special value types with custom encoding, when false those values will be
+passed to `::fallback-encode`, the result is not prefixed with `__edn-value|`.
+
+|`::fallback-encode`
+|`str`
+|Function to encode values in case `::encode-values?` is `false`.
 |===
 
 == JSON Like

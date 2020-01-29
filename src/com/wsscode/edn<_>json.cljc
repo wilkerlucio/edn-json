@@ -5,6 +5,8 @@
             #?(:cljs [goog.object :as gobj])))
 
 (s/def ::encode-list-type? boolean?)
+(s/def ::encode-values? boolean?)
+(s/def ::fallback-encode (s/fspec :args (s/cat :x any?) :ret any?))
 
 (defn simple-js-type?
   "Return true for simple JS types. The intended use of this function is to detect if
@@ -43,6 +45,16 @@
       s)
     s))
 
+(defn encode-value
+  "Encode value representation, in case it's disable, use fallback-encode, which
+  defaults to str."
+  [x {::keys [encode-values? fallback-encode]
+      :or    {encode-values?  true
+              fallback-encode str}}]
+  (if encode-values?
+    (str "__edn-value|" (pr-str x))
+    (fallback-encode x)))
+
 #?(:cljs
    (defn edn->json
      "Recursively transforms ClojureScript values to JavaScript.
@@ -60,7 +72,8 @@
      Other than that, all printable values should encode and decode with fidelity."
      ([x] (edn->json x {}))
      ([x {::keys [encode-list-type?]
-          :or    {encode-list-type? true}}]
+          :or    {encode-list-type? true}
+          :as    opts}]
       (letfn [(thisfn [x]
                 (cond
                   (simple-js-type? x) x
@@ -81,7 +94,7 @@
                               (doseq [x (map thisfn x)]
                                 (.push arr x))
                               arr)
-                  :else (str "__edn-value|" (pr-str x))))]
+                  :else (encode-value x opts)))]
         (thisfn x)))))
 
 (defn edn->json-like
@@ -90,7 +103,8 @@
   as JSON."
   ([x] (edn->json-like x {}))
   ([x {::keys [encode-list-type?]
-       :or    {encode-list-type? true}}]
+       :or    {encode-list-type? true}
+       :as    opts}]
    (letfn [(thisfn [x]
              (cond
                (simple-js-type? x) x
@@ -108,7 +122,7 @@
 
                                      [])]
                            (into arr (map thisfn) x))
-               :else (str "__edn-value|" (pr-str x))))]
+               :else (encode-value x opts)))]
      (thisfn x))))
 
 #?(:cljs
