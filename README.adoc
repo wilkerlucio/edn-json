@@ -127,14 +127,10 @@ options:
 |Encode special list types (sets and lists) by adding a special first element.
 When disable all sequences will be encoded as vectors.
 
-|`::encode-values?`
+|`::encode-value`
 |`true`
-|Encode EDN special value types with custom encoding, when false those values will be
-passed to `::fallback-encode`, the result is not prefixed with `__edn-value|`.
-
-|`::fallback-encode`
-|`str`
-|Function to encode values in case `::encode-values?` is `false`.
+|Encode EDN special value types with custom encoding, this is called for EDN keywords,
+symbols, uuids, instant and any other thing that isn't a simple JSON atomic type.
 |===
 
 == JSON Like

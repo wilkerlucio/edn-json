@@ -5,8 +5,8 @@
             #?(:cljs [goog.object :as gobj])))
 
 (s/def ::encode-list-type? boolean?)
-(s/def ::encode-values? boolean?)
-(s/def ::fallback-encode (s/fspec :args (s/cat :x any?) :ret any?))
+(s/def ::encode-key (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
+(s/def ::encode-value (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
 
 (defn simple-js-type?
   "Return true for simple JS types. The intended use of this function is to detect if
@@ -46,14 +46,11 @@
     s))
 
 (defn encode-value
-  "Encode value representation, in case it's disable, use fallback-encode, which
-  defaults to str."
-  [x {::keys [encode-values? fallback-encode]
-      :or    {encode-values?  true
-              fallback-encode str}}]
-  (if encode-values?
-    (str "__edn-value|" (pr-str x))
-    (fallback-encode x)))
+  "Encode value representation, can be overwritten with the ::encode-value setting."
+  [x {::keys [encode-value]}]
+  (if encode-value
+    (encode-value x)
+    (str "__edn-value|" (pr-str x))))
 
 #?(:cljs
    (defn edn->json
