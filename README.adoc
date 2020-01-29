@@ -132,7 +132,7 @@ When disable all sequences will be encoded as vectors.
 |`nil`
 |Encode EDN special value types with custom encoding.
 
-This is called for EDN keywords, symbols, uuids, instant and any other thing
+This is called for EDN keywords, symbols, uuids, instant and any other thing +
 that isn't a simple JSON atomic type.
 
 |`::encode-map-key`
