@@ -104,17 +104,25 @@
       (is (= (cj/edn->json-like #{true} {::cj/encode-list-type? false})
              [true])))
 
-    (testing "::encode-values?"
-      (is (= (cj/edn->json-like 42 {::cj/encode-values? false})
+    (testing "::encode-value"
+      (is (= (cj/edn->json-like 42 {::cj/encode-value str})
              42))
-      (is (= (cj/edn->json-like "" {::cj/encode-values? false})
+      (is (= (cj/edn->json-like "" {::cj/encode-value str})
              ""))
       (is (= (cj/edn->json-like :keyword {::cj/encode-value str})
              ":keyword"))
       (is (= (cj/edn->json-like :keyword {::cj/encode-value identity})
              :keyword))
       (is (= (cj/edn->json-like #{:keyword} {::cj/encode-value str})
-             ["__edn-list-type|set" ":keyword"])))))
+             ["__edn-list-type|set" ":keyword"])))
+
+    (testing "::encode-map-key"
+      (is (= (cj/edn->json-like 42 {::cj/encode-map-key str})
+             42))
+      (is (= (cj/edn->json-like "" {::cj/encode-map-key str})
+             ""))
+      (is (= (cj/edn->json-like {["foo"] "bar"} {::cj/encode-map-key str})
+             {"[\"foo\"]" "bar"})))))
 
 (deftest json-like->edn-test
   (testing "non string keys are maintained"

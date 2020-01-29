@@ -131,6 +131,10 @@ When disable all sequences will be encoded as vectors.
 |`true`
 |Encode EDN special value types with custom encoding, this is called for EDN keywords,
 symbols, uuids, instant and any other thing that isn't a simple JSON atomic type.
+
+|`::encode-map-key`
+|`true`
+|Encode EDN special value on map keys with custom encoding.
 |===
 
 == JSON Like

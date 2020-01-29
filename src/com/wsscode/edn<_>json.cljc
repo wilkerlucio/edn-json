@@ -5,8 +5,8 @@
             #?(:cljs [goog.object :as gobj])))
 
 (s/def ::encode-list-type? boolean?)
-(s/def ::encode-key (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
 (s/def ::encode-value (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
+(s/def ::encode-map-key (s/with-gen (s/nilable (s/fspec :args (s/cat :x any?) :ret any?)) #(s/gen (s/nilable #{str}))))
 
 (defn simple-js-type?
   "Return true for simple JS types. The intended use of this function is to detect if
@@ -20,7 +20,11 @@
       #?(:cljs (undefined? x))))
 
 (defn encode-key
-  [x]
+  "Encode map key, keywords numbers and strings are always encoded as strings. By
+  default encode other keys using the prefix `__edn-key|` and the END encoded value.
+
+  If you provide ::encode-map-key, this will be used instead of the default encode."
+  [x {::keys [encode-map-key]}]
   (cond
     (or (keyword? x)
         (number? x)
@@ -28,7 +32,9 @@
     (str x)
 
     :else
-    (str "__edn-key|" (pr-str x))))
+    (if encode-map-key
+      (encode-map-key x)
+      (str "__edn-key|" (pr-str x)))))
 
 (defn decode-key
   "Decode string key to EDN, if key is not a string it is returned as is."
@@ -77,7 +83,7 @@
                   (satisfies? IEncodeJS x) (-clj->js x)
                   (map? x) (let [m (js-obj)]
                              (doseq [[k v] x]
-                               (gobj/set m (encode-key k) (thisfn v)))
+                               (gobj/set m (encode-key k opts) (thisfn v)))
                              m)
                   (coll? x) (let [arr (array)]
                               (if encode-list-type?
@@ -107,7 +113,7 @@
                (simple-js-type? x) x
                (map? x) (into
                           {}
-                          (map (fn [[k v]] [(encode-key k) (thisfn v)]))
+                          (map (fn [[k v]] [(encode-key k opts) (thisfn v)]))
                           x)
                (coll? x) (let [arr (if encode-list-type?
                                      (cond-> []
