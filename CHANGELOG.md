@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.0.4]
+- Add support for `::encode-value`
+- Add support for `::encode-map-key`
+
 ## [1.0.3]
 - Decode JSON like will keep non string keys as is.
 
