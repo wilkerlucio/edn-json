@@ -1,4 +1,4 @@
-{:deps   {:aliases [:provided :test]}
+{:deps   {:aliases [:provided :test-cljs]}
  :nrepl  {:port 9566}
  :builds {:test {:target           :browser-test
                  :test-dir         "resources/public/js/test"
@@ -11,4 +11,4 @@
           :ci   {:target           :karma
                  :compiler-options {:output-feature-set :es6}
                  :ns-regexp        "-test$"
-                 :output-to        "resources/public/ci.js"}}}
+                 :output-to        "target/ci.js"}}}
