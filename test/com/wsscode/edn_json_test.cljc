@@ -140,7 +140,7 @@
     (is (= x (-> x cj/edn->json-like cj/json-like->edn)))))
 
 (defn is-nan? [x]
-  #?(:clj  false
+  #?(:clj  (and (number? x) (Double/isNaN x))
      :cljs (and (number? x) (js/isNaN x))))
 
 (defn sanitize-data [x]
@@ -210,8 +210,10 @@
 
   (transient #{})
   (sanitize-data {:foo 0})
-  (let [x [{":" 0}]]
-    (-> x cj/edn->json cj/json->edn))
+  (let [x [{[##NaN] 0}]]
+    (-> x cj/edn->json-like cj/json-like->edn))
+
+
 
   (tc/quick-check 50000 (valid-encode-decode) :max-size 12)
   (tc/quick-check 50000 (valid-encode-decode-json-like) :max-size 12)
