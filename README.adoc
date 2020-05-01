@@ -29,7 +29,7 @@ indexes, that expect json structures to work upon.
 
 There is the standard `clj->js`, but it has some problems:
 
-- it loses keyword namespaces data
+- it loses the keyword namespaces data
 - types are constrained by JSON (loses type information for UUID's, dates, etc...)
 
 This library tries to address this problem by making an opinionated encoder/decoder, by
@@ -60,7 +60,7 @@ Some examples of data encoded using this library:
 [source,clojure]
 ----
 (ns my-ns
-  (:require [com.wsscode.edn<->json :refer [edn->json json->edn]))
+  (:require [com.wsscode.edn-json :refer [edn->json json->edn]))
 
 ; simple scalars
 (= (edn->json 42) 42)

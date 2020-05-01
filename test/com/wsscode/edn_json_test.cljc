@@ -1,4 +1,4 @@
-(ns com.wsscode.edn<->json-test
+(ns com.wsscode.edn-json-test
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.string :as str]
@@ -7,7 +7,7 @@
             [clojure.test.check.clojure-test :as test :include-macros true]
             [clojure.test.check.properties :as props]
             [clojure.walk :as walk]
-            [com.wsscode.edn<->json :as cj]))
+            [com.wsscode.edn-json :as cj]))
 
 #?(:cljs
    (defn =js [a b]

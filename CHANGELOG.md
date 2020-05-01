@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.1.0]
+- Major breaking change, the namespace is now `com.wsscode.edn-json` instead of `com.wsscode.edn<->json`
+  this change is necessary because the old name doesn't work on Windows environments. 
+
 ## [1.0.5]
 - Sanitize strings starting with `__edn-value|`
 

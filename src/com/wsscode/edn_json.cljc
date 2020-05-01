@@ -1,4 +1,4 @@
-(ns com.wsscode.edn<->json
+(ns com.wsscode.edn-json
   (:require [clojure.edn :as edn]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
